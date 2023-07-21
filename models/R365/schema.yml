@@ -1,0 +1,57 @@
+version: 2
+
+sources:
+  - name: |
+      {%- if  target.name == "dev" -%} intacct_dummy
+      {%- elif target.name == "qa"  -%} intacct_dummy
+      {%- elif target.name == "prod"  -%} dbt_bq_demo_prod
+      {%- else -%} intacct_dummy
+      {%- endif -%}
+    database: |
+      {%- if  target.name == "dev" -%} restarunt-365
+      {%- elif target.name == "qa"  -%} restarunt-365
+      {%- elif target.name == "prod"  -%} dbt-bq-demo-391806
+      {%- else -%} restarunt-365
+      {%- endif -%}
+    tables:
+      - name: udm_accounts
+      - name: rdm_int_straightlined_revenue
+      - name: rdm_int_usage_revenue
+      - name: rdm_contracts
+      - name: rdm_contract_line_items
+
+models:
+  - name: rdm_contract_line_items
+    description: One record per contract_id
+    columns:
+      - name: contract_id
+        description: Primary key
+        tests:
+          - unique
+          - not_null
+      - name: contract_line_item_price
+        description: This price indicates in USD.
+
+  - name: rdm_contracts
+    description: This model provides the active and inactive customers data
+    columns:
+      - name: contract_status
+        description: This field indicates the status of a customer
+        tests:
+          - accepted_values:
+              values: ["ACTIVE", "INACTIVE"]
+
+  - name: rdm_int_straightlined_revenue
+    description: This model provides the straight lined revenue information
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('rdm_contract_line_items')
+              field: customer_id
+  - name: rdm_int_usage_revenue
+    freshness:
+      warn_after: { count:12, period: hour }
+      error_after: { count:24, period: hour }
+    loaded_at_field: _partitiontime
