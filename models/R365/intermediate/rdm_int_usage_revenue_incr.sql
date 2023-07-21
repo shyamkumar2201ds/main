@@ -1,5 +1,3 @@
-insert into {{ source ('intacct_dummy', 'rdm_int_usage_revenue') }}
-(
 select
     contract_line_item_price,
     contract_line_item_quantity,
@@ -11,4 +9,3 @@ select
     is_recurring
 from {{ source ('intacct_dummy', 'rdm_int_usage_revenue') }}
 {{ limit_data_in_dev('timestamp_trunc(_PARTITIONTIME, day)') }}
-)
