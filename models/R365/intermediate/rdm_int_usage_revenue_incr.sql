@@ -7,5 +7,6 @@ select
     revenue_id,
     software_product_id,
     is_recurring
-from {{ source ('intacct_dummy', 'rdm_int_usage_revenue') }}
+---from {{ source ('intacct_dummy', 'rdm_int_usage_revenue') }}
+from {{ ref ('rdm_int_usage_revenue') }}
 {{ limit_data_in_dev('timestamp_trunc(_PARTITIONTIME, day)') }}
